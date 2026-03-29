@@ -1,196 +1,264 @@
-const USE_REAL_AI = String(import.meta.env.VITE_USE_REAL_AI) === "true";
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-const OPENROUTER_BASE_URL =
-  import.meta.env.VITE_OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-const OPENROUTER_MODEL =
-  import.meta.env.VITE_OPENROUTER_MODEL || "stepfun/step-3.5-flash:free";
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_API_KEY =
+  "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";
+const OPENROUTER_MODEL = "stepfun/step-3.5-flash:free";
+const SITE_URL =
+  import.meta.env.VITE_SITE_URL ||
+  window.location.origin ||
+  "http://localhost:5173";
+const SITE_NAME = import.meta.env.VITE_SITE_NAME || "Gnosis";
 
 export function canUseRealAI() {
-  return Boolean(USE_REAL_AI && OPENROUTER_API_KEY && OPENROUTER_BASE_URL);
-}
-
-export async function getEssayCoachReply(messages, profile) {
-  if (!canUseRealAI()) {
-    return smartLocalReply(messages, profile);
-  }
-
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [
-        { role: "system", content: buildSystemPrompt(profile) },
-        ...messages.map((message) => ({
-          role: message.role,
-          content: message.content,
-        })),
-      ],
-      temperature: 0.7,
-    }),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `OpenRouter API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return (
-    data?.choices?.[0]?.message?.content?.trim() ||
-    "I’m here to help with your essays and applications."
+  return Boolean(
+    OPENROUTER_API_KEY && OPENROUTER_API_KEY !== "YOUR_OPENROUTER_API_KEY_HERE",
   );
 }
 
-export async function streamEssayCoachReply(messages, profile, onDelta) {
-  if (!canUseRealAI()) {
-    const fallback = smartLocalReply(messages, profile);
-    onDelta(fallback);
-    return fallback;
-  }
+function buildSystemPrompt(profile) {
+  return [
+    "You are Gnosis AI Essay Coach.",
+    "You help with university applications, essays, school fit analysis, interview prep, and strategy.",
+    "Always write in clean, well-structured markdown.",
+    "Use short sections, short bullets, and avoid giant unbroken blocks.",
+    "When giving school-fit analysis, prefer this structure:",
+    "1. Quick read",
+    "2. What it means for the student's major",
+    "3. Admissions fit",
+    "4. What to do next",
+    profile?.targetMajor ? `Target major: ${profile.targetMajor}.` : "",
+    profile?.dreamSchool ? `Dream school: ${profile.dreamSchool}.` : "",
+    profile?.targetCountries?.length
+      ? `Target countries: ${profile.targetCountries.join(", ")}.`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+function buildPayload(messages, profile, stream = false) {
+  return {
+    model: OPENROUTER_MODEL,
+    stream,
+    temperature: 0.7,
+    messages: [
+      {
+        role: "system",
+        content: buildSystemPrompt(profile),
+      },
+      ...messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+    ],
+  };
+}
+
+function getHeaders() {
+  return {
+    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+    "Content-Type": "application/json",
+    "HTTP-Referer": SITE_URL,
+    "X-Title": SITE_NAME,
+  };
+}
+
+function ensureApiKey() {
+  if (!canUseRealAI()) {
+    throw new Error(
+      "Missing OpenRouter API key. Replace YOUR_OPENROUTER_API_KEY_HERE in src/lib/openai.js.",
+    );
+  }
+}
+
+function cleanJsonText(text) {
+  return (text || "")
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function getMessageContent(data) {
+  return data?.choices?.[0]?.message?.content?.trim() || "";
+}
+
+function normalizeQuestion(question, index) {
+  const options = Array.isArray(question?.options)
+    ? question.options.slice(0, 4)
+    : [];
+
+  return {
+    id: Number(question?.id) || index + 1,
+    question: String(question?.question || `Question ${index + 1}`),
+    options:
+      options.length === 4
+        ? options.map((item) => String(item))
+        : ["Option A", "Option B", "Option C", "Option D"],
+    answer:
+      typeof question?.answer === "number" &&
+      question.answer >= 0 &&
+      question.answer <= 3
+        ? question.answer
+        : 0,
+    explanation: String(
+      question?.explanation || "Review the IELTS concept behind this item.",
+    ),
+  };
+}
+
+export async function getEssayCoachReply(messages, profile) {
+  ensureApiKey();
+
+  const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      stream: true,
-      messages: [
-        { role: "system", content: buildSystemPrompt(profile) },
-        ...messages.map((message) => ({
-          role: message.role,
-          content: message.content,
-        })),
-      ],
-      temperature: 0.7,
-    }),
+    headers: getHeaders(),
+    body: JSON.stringify(buildPayload(messages, profile, false)),
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `OpenRouter streaming error: ${response.status}`);
+    throw new Error(text || "OpenRouter request failed");
+  }
+
+  const data = await response.json();
+  const reply = getMessageContent(data);
+
+  if (!reply) {
+    throw new Error("OpenRouter returned empty content");
+  }
+
+  return reply;
+}
+
+export async function streamEssayCoachReply(messages, profile, onDelta) {
+  ensureApiKey();
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(buildPayload(messages, profile, true)),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "OpenRouter streaming request failed");
   }
 
   if (!response.body) {
-    throw new Error("Streaming not supported in this browser.");
+    throw new Error("Streaming response body is unavailable");
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
+
   let fullText = "";
-  let buffer = "";
+  let buffered = "";
 
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
 
-    buffer += decoder.decode(value, { stream: true });
+    buffered += decoder.decode(value, { stream: true });
 
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
+    const parts = buffered.split("\n");
+    buffered = parts.pop() || "";
 
-    for (const line of lines) {
+    for (const line of parts) {
       const trimmed = line.trim();
       if (!trimmed.startsWith("data:")) continue;
 
-      const data = trimmed.slice(5).trim();
-      if (data === "[DONE]") {
+      const payload = trimmed.replace(/^data:\s*/, "").trim();
+
+      if (payload === "[DONE]") {
         return fullText;
       }
 
       try {
-        const json = JSON.parse(data);
-        const delta = json?.choices?.[0]?.delta?.content || "";
-        if (delta) {
-          fullText += delta;
-          onDelta(fullText);
+        const json = JSON.parse(payload);
+        const chunkText = json?.choices?.[0]?.delta?.content || "";
+
+        if (chunkText) {
+          fullText += chunkText;
+          onDelta?.(chunkText, fullText);
         }
-      } catch {}
+      } catch {
+        continue;
+      }
     }
   }
 
   return fullText;
 }
 
-function buildSystemPrompt(profile) {
-  const major = profile?.targetMajor || "Undeclared";
-  const dreamSchool = profile?.dreamSchool || "Not specified";
-  const countries =
-    (profile?.targetCountries || []).join(", ") || "Not specified";
-  const gpa = profile?.gpa || "Not provided";
-  const grade = profile?.currentGrade || "Not provided";
+export async function generateIeltsQuiz(profile) {
+  ensureApiKey();
 
-  return `
-You are Gnosis AI Essay Coach, an application assistant for students.
+  const system = [
+    "You are an IELTS preparation assistant.",
+    "Create exactly 20 IELTS multiple-choice questions.",
+    "All questions must be returned as JSON only.",
+    "Focus on IELTS exam format, candidate understanding of the test, and concepts that improve performance.",
+    "Each question must have 4 options.",
+    "Each question must include: id, question, options, answer, explanation.",
+    "The answer must be the zero-based index of the correct option.",
+    "Do not include markdown fences.",
+    'Return valid JSON in this shape: {"questions":[...]}',
+  ].join(" ");
 
-Primary tasks:
-- personal statements
-- supplemental essays
-- interview preparation
-- CV / resume writing
-- school selection strategy
-- scholarship essay ideas
-- study planning
-- comparing universities and deadlines
+  const user = [
+    "Student profile:",
+    `Name: ${profile?.fullName || "Student"}`,
+    `Grade: ${profile?.currentGrade || "Unknown"}`,
+    `Country: ${profile?.country || "Unknown"}`,
+    `City: ${profile?.city || "Unknown"}`,
+    "Target score context: IELTS practice",
+    "Need 20 questions, MC only, varied questions each time, some overlap acceptable.",
+  ].join("\n");
 
-Style rules:
-- be supportive, practical, and concise
-- give concrete suggestions
-- tailor advice to the student's profile
-- do not make up fake admission guarantees
-- strongly prefer markdown tables when comparing schools, organizing plans, listing deadlines, or summarizing revision advice
-- when a table is useful, use it automatically
-- when a table is not suitable, use bullet points
-- output clean markdown with proper line breaks
-- when using tables, make valid markdown tables
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({
+      model: OPENROUTER_MODEL,
+      temperature: 0.9,
+      stream: false,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
+  });
 
-Student profile:
-- Grade: ${grade}
-- GPA: ${gpa}
-- Target major: ${major}
-- Dream school: ${dreamSchool}
-- Target countries: ${countries}
-`;
-}
-
-function smartLocalReply(messages, profile) {
-  const lastUserMessage =
-    [...messages]
-      .reverse()
-      .find((m) => m.role === "user")
-      ?.content?.trim() || "";
-
-  const major = profile?.targetMajor || "your intended field";
-  const dreamSchool = profile?.dreamSchool || "your target universities";
-
-  if (
-    /compare|comparison|表格|整理|比較|schools|universities|大學/i.test(
-      lastUserMessage,
-    )
-  ) {
-    return [
-      `| Option | Fit | Notes |`,
-      `|---|---|---|`,
-      `| ${dreamSchool} | Reach/Target | Strong choice if essays and profile are competitive |`,
-      `| Other schools | Match/Safe | Useful for a balanced application list |`,
-    ].join("\n");
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "OpenRouter request failed");
   }
 
-  if (/review|edit|improve|修改|潤稿/i.test(lastUserMessage)) {
-    return [
-      `| Revision Area | What to Improve |`,
-      `|---|---|`,
-      `| Opening | Start with one vivid moment |`,
-      `| Body | Add specific actions and evidence |`,
-      `| Ending | Link reflection to ${major} |`,
-    ].join("\n");
+  const data = await response.json();
+  const content = getMessageContent(data);
+
+  if (!content) {
+    throw new Error("OpenRouter returned empty content");
   }
 
-  return `I can help with essays, interviews, university comparisons, and application planning. I can also use tables when helpful.`;
+  let parsed;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    parsed = JSON.parse(cleanJsonText(content));
+  }
+
+  if (!parsed?.questions || !Array.isArray(parsed.questions)) {
+    throw new Error("Invalid IELTS quiz format");
+  }
+
+  return parsed.questions.slice(0, 20).map(normalizeQuestion);
 }
+
+export {
+  OPENROUTER_API_URL,
+  OPENROUTER_API_KEY,
+  OPENROUTER_MODEL,
+  SITE_URL,
+  SITE_NAME,
+};

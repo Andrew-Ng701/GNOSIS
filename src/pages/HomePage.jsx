@@ -5,17 +5,14 @@ import {
   GraduationCap,
   CalendarDays,
   ArrowRight,
-  FileText,
-  Sparkles,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import ProgressRing from "../components/ProgressRing";
 import NotificationPanel from "../components/NotificationPanel";
 import StatCard from "../components/StatCard";
 import { Badge, SectionTitle } from "../components/ui";
 import {
-  getApplications,
   getDocuments,
   getNotifications,
   getProfile,
@@ -39,7 +36,6 @@ export default function HomePage() {
   const profile = getProfile();
   const notifications = getNotifications();
   const documents = getDocuments();
-  const applications = getApplications();
 
   const unreadCount = notifications.filter((item) => item.unread).length;
   const progress = getTaskProgress(tasks);
@@ -53,7 +49,6 @@ export default function HomePage() {
       profile.city,
       profile.schoolName,
       profile.gpa,
-      profile.curriculum,
       profile.targetMajor,
       profile.dreamSchool,
     ];
@@ -64,26 +59,11 @@ export default function HomePage() {
   const readinessScore = useMemo(() => {
     const docComplete = documents.filter((d) => d.status === "Complete").length;
     const taskDone = tasks.filter((t) => t.completed).length;
-    const applicationsStarted = applications.length;
     return Math.min(
       100,
-      Math.round(
-        docComplete * 8 +
-          taskDone * 6 +
-          applicationsStarted * 7 +
-          (profile.gpa ? 1 : 0) * 8 +
-          (profile.targetCountries?.length ? 1 : 0) * 8,
-      ),
+      Math.round(docComplete * 10 + taskDone * 8 + (profile.gpa ? 10 : 0)),
     );
-  }, [
-    applications.length,
-    documents,
-    profile.gpa,
-    profile.targetCountries,
-    tasks,
-  ]);
-
-  const overallScore = Math.round((profileScore + readinessScore) / 2);
+  }, [documents, tasks, profile.gpa]);
 
   const upcomingTasks = useMemo(() => {
     return [...tasks]
@@ -92,16 +72,7 @@ export default function HomePage() {
       .slice(0, 4);
   }, [tasks]);
 
-  const recentApplications = useMemo(() => {
-    return [...applications]
-      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-      .slice(0, 3);
-  }, [applications]);
-
-  const completedDocs = documents.filter(
-    (doc) => doc.status === "Complete",
-  ).length;
-  const pendingDocs = documents.length - completedDocs;
+  const overallScore = Math.round((profileScore + readinessScore) / 2);
 
   function toggleTask(id) {
     const next = tasks.map((task) =>
@@ -116,7 +87,7 @@ export default function HomePage() {
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">
-            Welcome back, {getFirstName(profile.fullName)}! 👋
+            Welcome back, {getFirstName(profile.fullName)}!
           </h1>
           <p className="mt-1 text-sm text-body">{getGreeting()}</p>
         </div>
@@ -126,11 +97,11 @@ export default function HomePage() {
           onClick={() => setNotificationsOpen(true)}
         >
           <Bell size={18} />
-          {unreadCount > 0 && (
+          {unreadCount > 0 ? (
             <span className="absolute right-2 top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
               {unreadCount}
             </span>
-          )}
+          ) : null}
         </button>
       </div>
 
@@ -140,8 +111,7 @@ export default function HomePage() {
             <p className="text-sm text-white/80">Gnosis Score</p>
             <h2 className="mt-1 text-xl font-bold">Application Readiness</h2>
             <p className="mt-3 text-sm text-white/85">
-              {applications.length} Applications ·{" "}
-              {tasks.filter((item) => !item.completed).length} Active Tasks
+              8 Schools Matched · 3 Reach
             </p>
           </div>
           <ProgressRing value={overallScore} />
@@ -150,11 +120,11 @@ export default function HomePage() {
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-white/15 p-3">
             <p className="text-xs text-white/75">Profile</p>
-            <p className="mt-1 text-lg font-bold">{profileScore}%</p>
+            <p className="mt-1 text-lg font-bold">{profileScore}</p>
           </div>
           <div className="rounded-2xl bg-white/15 p-3">
             <p className="text-xs text-white/75">Readiness</p>
-            <p className="mt-1 text-lg font-bold">{readinessScore}%</p>
+            <p className="mt-1 text-lg font-bold">{readinessScore}</p>
           </div>
         </div>
       </div>
@@ -167,7 +137,7 @@ export default function HomePage() {
         />
         <StatCard
           icon={<GraduationCap size={20} />}
-          value={applications.length}
+          value={8}
           label="Schools"
         />
         <StatCard
@@ -190,12 +160,24 @@ export default function HomePage() {
         <div className="space-y-3">
           {upcomingTasks.map((task) => (
             <div key={task.id} className="card flex items-center gap-3 p-4">
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => toggleTask(task.id)}
-                className="h-5 w-5 rounded border-slate-300 accent-brand-500"
-              />
+              <button onClick={() => toggleTask(task.id)}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-square-check-big text-emerald-600"
+                  aria-hidden="true"
+                >
+                  <path d="M21 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.5"></path>
+                  <path d="m9 11 3 3L22 4"></path>
+                </svg>
+              </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">
                   {task.title}
@@ -214,10 +196,10 @@ export default function HomePage() {
           ))}
         </div>
       ) : (
-        <div className="card p-5">
+        <div className="card p-5 text-center">
           <p className="text-sm font-semibold text-ink">No upcoming tasks</p>
-          <p className="mt-1 text-sm text-body">
-            Start by adding a school from Match or create a task in Timeline.
+          <p className="mt-2 text-sm text-body">
+            You are all caught up for now.
           </p>
         </div>
       )}
@@ -226,118 +208,54 @@ export default function HomePage() {
         <SectionTitle title="Quick Actions" />
         <div className="grid grid-cols-2 gap-3">
           <ActionCard
-            icon={<GraduationCap size={18} className="text-brand-500" />}
             title="Find Schools"
-            desc="Browse AI-powered recommendations and add applications."
+            desc="See AI-powered recommendations."
             onClick={() => navigate("/match")}
           />
           <ActionCard
-            icon={<Sparkles size={18} className="text-brand-500" />}
             title="AI Essay Coach"
-            desc="Brainstorm, revise, and practice interview answers."
+            desc="Draft, refine, and practice."
             onClick={() => navigate("/ai-agent")}
           />
           <ActionCard
-            icon={<CalendarDays size={18} className="text-brand-500" />}
             title="My Timeline"
-            desc="Manage deadlines, tasks, and next steps."
+            desc="Manage next steps and deadlines."
             onClick={() => navigate("/timeline")}
           />
           <ActionCard
-            icon={<FileText size={18} className="text-brand-500" />}
             title="Documents"
-            desc="Track uploads and application file readiness."
+            desc="Track uploads and readiness."
             onClick={() => navigate("/documents")}
           />
         </div>
       </div>
 
       <div className="mt-6">
-        <SectionTitle
-          title="Active Applications"
-          action={
-            <button
-              className="text-sm font-medium text-brand-600"
-              onClick={() => navigate("/match")}
-            >
-              Explore
-            </button>
-          }
-        />
-
-        {recentApplications.length > 0 ? (
-          <div className="space-y-3">
-            {recentApplications.map((application) => (
-              <div key={application.id} className="card p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-ink">
-                      {application.universityName}
-                    </p>
-                    <p className="mt-1 text-xs text-body">
-                      {application.targetMajor} · {application.country}
-                    </p>
-                  </div>
-                  <Badge
-                    className={getApplicationStatusColor(application.status)}
-                  >
-                    {application.status}
-                  </Badge>
-                </div>
-
-                <div className="mt-3 flex items-center gap-2 text-xs text-body">
-                  <CalendarDays size={13} />
-                  Deadline {formatDueDate(application.deadline)}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="card p-5">
-            <p className="text-sm font-semibold text-ink">
-              No applications yet
-            </p>
-            <p className="mt-1 text-sm text-body">
-              Visit the Match page to shortlist universities and start applying.
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6">
         <SectionTitle title="Application Progress" />
         <div className="card p-4">
           <TimelineStep
-            done={Boolean(applications.length)}
-            title="Shortlist Universities"
-            desc="Build a balanced list of reach, match, and safe schools."
+            done
+            title="Research Schools"
+            desc="Shortlist and compare programs."
           />
           <TimelineStep
-            done={profileScore >= 80}
-            title="Complete Profile"
-            desc="Fill in your academic details, target major, and countries."
+            done
+            title="Build Profile"
+            desc="Complete your academic profile."
           />
           <TimelineStep
-            active={tasks.some(
-              (task) => task.category === "Essays" && !task.completed,
-            )}
-            done={tasks.some(
-              (task) => task.category === "Essays" && task.completed,
-            )}
+            active
             title="Write Essays"
-            desc="Draft and improve your personal statement and supplements."
+            desc="Draft and improve personal statements."
           />
           <TimelineStep
-            active={pendingDocs > 0}
-            done={pendingDocs === 0}
-            title="Prepare Documents"
-            desc="Upload transcripts, recommendations, scores, and resume."
+            title="Submit Applications"
+            desc="Finalize forms and uploads."
           />
           <TimelineStep
             isLast
-            active={applications.some((app) => app.status === "Applying")}
-            title="Submit Applications"
-            desc="Finalize forms and track status updates by deadline."
+            title="Track Results"
+            desc="Monitor offers and updates."
           />
         </div>
       </div>
@@ -351,17 +269,14 @@ export default function HomePage() {
   );
 }
 
-function ActionCard({ icon, title, desc, onClick }) {
+function ActionCard({ title, desc, onClick }) {
   return (
     <button
       onClick={onClick}
       className="card p-4 text-left transition active:scale-[0.99]"
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span>{icon}</span>
-          <h3 className="text-sm font-semibold text-ink">{title}</h3>
-        </div>
+        <h3 className="text-sm font-semibold text-ink">{title}</h3>
         <ArrowRight size={16} className="text-brand-500" />
       </div>
       <p className="mt-2 text-xs leading-5 text-body">{desc}</p>
@@ -384,21 +299,13 @@ function TimelineStep({
             done ? "bg-emerald-500" : active ? "bg-brand-500" : "bg-slate-300"
           }`}
         />
-        {!isLast && <div className="mt-1 h-full w-0.5 bg-slate-200" />}
+        {!isLast ? <div className="mt-1 h-full w-0.5 bg-slate-200" /> : null}
       </div>
+
       <div className="flex-1">
         <p className="text-sm font-semibold text-ink">{title}</p>
         <p className="mt-1 text-xs text-body">{desc}</p>
       </div>
     </div>
   );
-}
-
-function getApplicationStatusColor(status) {
-  if (status === "Offer") return "bg-emerald-100 text-emerald-700";
-  if (status === "Submitted") return "bg-sky-100 text-sky-700";
-  if (status === "Applying") return "bg-amber-100 text-amber-700";
-  if (status === "Rejected") return "bg-rose-100 text-rose-700";
-  if (status === "Interview") return "bg-violet-100 text-violet-700";
-  return "bg-slate-100 text-slate-700";
 }

@@ -8,6 +8,7 @@ import CommunityPage from "./pages/CommunityPage";
 import MorePage from "./pages/MorePage";
 import TimelinePage from "./pages/TimelinePage";
 import DocumentsPage from "./pages/DocumentsPage";
+import IELTSPracticePage from "./pages/IELTSPracticePage";
 import { getOnboardingComplete } from "./lib/storage";
 
 function ProtectedRoute({ children }) {
@@ -25,6 +26,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<OnboardingPage />} />
+
       <Route
         path="/home"
         element={
@@ -35,6 +37,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/match"
         element={
@@ -45,6 +48,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/ai-agent"
         element={
@@ -55,6 +59,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/community"
         element={
@@ -65,16 +70,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/more"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <MorePage />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
+
       <Route
         path="/timeline"
         element={
@@ -85,6 +81,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/documents"
         element={
@@ -95,6 +92,29 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/ielts-practice"
+        element={
+          <ProtectedRoute>
+            <AppShell showNav={false}>
+              <IELTSPracticePage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/more"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <MorePage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

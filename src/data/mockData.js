@@ -1,11 +1,3 @@
-export const gradeOptions = [
-  "Grade 9",
-  "Grade 10",
-  "Grade 11",
-  "Grade 12",
-  "Gap Year",
-];
-
 export const majorOptions = [
   "Computer Science",
   "Business",
@@ -26,239 +18,18 @@ export const countryOptions = [
   "Singapore",
 ];
 
-export const targetCountryOptions = [
-  "USA",
-  "UK",
-  "Canada",
-  "Australia",
-  "Hong Kong",
-  "Singapore",
-  "Other",
-];
-
-export const cityOptionsByCountry = {
-  USA: [
-    "New York",
-    "San Francisco",
-    "Los Angeles",
-    "Boston",
-    "Seattle",
-    "Other",
-  ],
-  UK: ["London", "Oxford", "Cambridge", "Manchester", "Edinburgh", "Other"],
-  Canada: ["Toronto", "Vancouver", "Montreal", "Ottawa", "Other"],
-  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Other"],
-  "Hong Kong": ["Hong Kong", "Kowloon", "New Territories", "Other"],
-  Singapore: ["Singapore", "Other"],
-};
-
 export const dreamSchools = [
   "MIT",
-  "Stanford University",
-  "Harvard University",
+  "Stanford",
   "University of Oxford",
-  "University of Cambridge",
+  "University of Toronto",
   "Imperial College London",
   "UCL",
+  "Harvard University",
+  "University of Cambridge",
   "National University of Singapore",
-  "University of Toronto",
-  "University of Melbourne",
-  "Carnegie Mellon University",
-  "UC Berkeley",
+  "University of Hong Kong",
 ];
-
-export const applicationStatuses = [
-  "Applying",
-  "Submitted",
-  "Interview",
-  "Offer",
-  "Rejected",
-  "Waitlisted",
-];
-
-export const universityFilters = [
-  "All",
-  "Reach",
-  "Match",
-  "Safe",
-  "USA",
-  "UK",
-  "Canada",
-  "Australia",
-  "Hong Kong",
-  "Singapore",
-];
-
-export const universities = [
-  {
-    id: "uni-1",
-    name: "Massachusetts Institute of Technology",
-    shortName: "MIT",
-    rank: 1,
-    location: "Cambridge, MA, USA",
-    country: "USA",
-    type: "Private",
-    applicationRound: "Regular Decision",
-    match: 92,
-    acceptanceRate: "3.4%",
-    tuition: "$57,590/yr",
-    deadline: "2026-01-05",
-    description:
-      "A world-leading university known for engineering, computer science, entrepreneurship, and hands-on research culture.",
-    tags: ["STEM", "Research", "Innovation"],
-    majors: ["Computer Science", "Engineering", "Economics"],
-    image:
-      "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-2",
-    name: "Stanford University",
-    shortName: "Stanford",
-    rank: 2,
-    location: "Stanford, CA, USA",
-    country: "USA",
-    type: "Private",
-    applicationRound: "Regular Decision",
-    match: 78,
-    acceptanceRate: "3.7%",
-    tuition: "$56,169/yr",
-    deadline: "2026-01-03",
-    description:
-      "Stanford combines academic excellence with strong startup culture, interdisciplinary learning, and global research opportunities.",
-    tags: ["Entrepreneurship", "AI", "Innovation"],
-    majors: ["Computer Science", "Business", "Engineering", "Psychology"],
-    image:
-      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-3",
-    name: "University of Oxford",
-    shortName: "Oxford",
-    rank: 3,
-    location: "Oxford, UK",
-    country: "UK",
-    type: "Public",
-    applicationRound: "UCAS",
-    match: 45,
-    acceptanceRate: "17.5%",
-    tuition: "£9,250/yr",
-    deadline: "2025-10-15",
-    description:
-      "Oxford offers a tutorial-based academic environment with strong global prestige across humanities, sciences, law, and medicine.",
-    tags: ["Tutorials", "Prestige", "Collegiate"],
-    majors: ["Law", "Medicine", "Economics", "Computer Science", "Arts"],
-    image:
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-4",
-    name: "University of Toronto",
-    shortName: "UofT",
-    rank: 15,
-    location: "Toronto, Canada",
-    country: "Canada",
-    type: "Public",
-    applicationRound: "Main Round",
-    match: 88,
-    acceptanceRate: "43%",
-    tuition: "CAD $6,100/yr",
-    deadline: "2026-01-15",
-    description:
-      "A strong destination for international students with broad program choice, research intensity, and access to Toronto’s urban opportunities.",
-    tags: ["Research", "International", "Urban"],
-    majors: ["Computer Science", "Engineering", "Business", "Psychology"],
-    image:
-      "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-5",
-    name: "Imperial College London",
-    shortName: "Imperial",
-    rank: 6,
-    location: "London, UK",
-    country: "UK",
-    type: "Public",
-    applicationRound: "UCAS",
-    match: 62,
-    acceptanceRate: "14.3%",
-    tuition: "£35,100/yr",
-    deadline: "2026-01-31",
-    description:
-      "Imperial is highly regarded for science, engineering, medicine, and data-driven fields with strong industry links.",
-    tags: ["STEM", "London", "Industry"],
-    majors: ["Computer Science", "Engineering", "Medicine"],
-    image:
-      "https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-6",
-    name: "National University of Singapore",
-    shortName: "NUS",
-    rank: 8,
-    location: "Singapore",
-    country: "Singapore",
-    type: "Public",
-    applicationRound: "Main Round",
-    match: 84,
-    acceptanceRate: "Approx. competitive",
-    tuition: "SGD $17,650/yr",
-    deadline: "2026-02-26",
-    description:
-      "NUS is a top Asian university with strong performance in computing, engineering, business, and interdisciplinary programs.",
-    tags: ["Asia", "Global", "Research"],
-    majors: ["Computer Science", "Business", "Engineering", "Law"],
-    image:
-      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-7",
-    name: "University of Hong Kong",
-    shortName: "HKU",
-    rank: 17,
-    location: "Hong Kong",
-    country: "Hong Kong",
-    type: "Public",
-    applicationRound: "Main Round",
-    match: 86,
-    acceptanceRate: "Competitive",
-    tuition: "HKD $182,000/yr",
-    deadline: "2026-01-15",
-    description:
-      "HKU offers a strong international environment, especially attractive for students seeking Asia-focused opportunities and English-medium study.",
-    tags: ["Asia", "International", "City Campus"],
-    majors: ["Business", "Law", "Medicine", "Computer Science"],
-    image:
-      "https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "uni-8",
-    name: "University of Melbourne",
-    shortName: "Melbourne",
-    rank: 13,
-    location: "Melbourne, Australia",
-    country: "Australia",
-    type: "Public",
-    applicationRound: "Semester Intake",
-    match: 80,
-    acceptanceRate: "Moderate",
-    tuition: "AUD $52,000/yr",
-    deadline: "2026-02-28",
-    description:
-      "Melbourne provides broad academic options, strong student support, and a flexible pathway into many professional and research areas.",
-    tags: ["Australia", "Flexible", "Research"],
-    majors: [
-      "Arts",
-      "Business",
-      "Engineering",
-      "Psychology",
-      "Computer Science",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
-  },
-];
-
-export const initialApplications = [];
 
 export const initialTasks = [
   {
@@ -267,7 +38,6 @@ export const initialTasks = [
     category: "Research",
     dueDate: "2026-03-18",
     completed: false,
-    linkedUniversityId: "",
   },
   {
     id: "task-2",
@@ -275,7 +45,6 @@ export const initialTasks = [
     category: "Essays",
     dueDate: "2026-03-20",
     completed: false,
-    linkedUniversityId: "",
   },
   {
     id: "task-3",
@@ -283,7 +52,6 @@ export const initialTasks = [
     category: "Documents",
     dueDate: "2026-03-10",
     completed: true,
-    linkedUniversityId: "",
   },
   {
     id: "task-4",
@@ -291,7 +59,6 @@ export const initialTasks = [
     category: "Exams",
     dueDate: "2026-04-01",
     completed: false,
-    linkedUniversityId: "",
   },
   {
     id: "task-5",
@@ -299,18 +66,16 @@ export const initialTasks = [
     category: "Applications",
     dueDate: "2026-03-05",
     completed: true,
-    linkedUniversityId: "",
   },
 ];
 
 export const aiSuggestedTasks = [
   {
     id: "task-ai-1",
-    title: "Draft a university short list",
+    title: "Draft a university shortlist",
     category: "Research",
     dueDate: "2026-03-25",
     completed: false,
-    linkedUniversityId: "",
   },
   {
     id: "task-ai-2",
@@ -318,7 +83,204 @@ export const aiSuggestedTasks = [
     category: "Essays",
     dueDate: "2026-03-22",
     completed: false,
-    linkedUniversityId: "",
+  },
+];
+
+export const universities = [
+  {
+    id: "uni-1",
+    name: "MIT",
+    rank: 1,
+    location: "Cambridge, MA, USA",
+    country: "USA",
+    match: 92,
+    acceptanceRate: "3.4%",
+    tuition: "$57,590/yr",
+    deadline: "Jan 5",
+    image:
+      "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-2",
+    name: "Imperial College London",
+    rank: 2,
+    location: "London, UK",
+    country: "UK",
+    match: 82,
+    acceptanceRate: "14.3%",
+    tuition: "£35,100/yr",
+    deadline: "Jan 31",
+    image:
+      "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-3",
+    name: "Stanford",
+    rank: 3,
+    location: "Stanford, CA, USA",
+    country: "USA",
+    match: 78,
+    acceptanceRate: "3.7%",
+    tuition: "$56,169/yr",
+    deadline: "Jan 3",
+    image:
+      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-4",
+    name: "University of Oxford",
+    rank: 4,
+    location: "Oxford, UK",
+    country: "UK",
+    match: 45,
+    acceptanceRate: "17.5%",
+    tuition: "£9,250/yr",
+    deadline: "Oct 15",
+    image:
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-5",
+    name: "Harvard University",
+    rank: 5,
+    location: "Cambridge, MA, USA",
+    country: "USA",
+    match: 58,
+    acceptanceRate: "3.6%",
+    tuition: "$56,550/yr",
+    deadline: "Jan 1",
+    image:
+      "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-6",
+    name: "University of Cambridge",
+    rank: 6,
+    location: "Cambridge, UK",
+    country: "UK",
+    match: 54,
+    acceptanceRate: "21%",
+    tuition: "£9,250+/yr",
+    deadline: "Oct 15",
+    image:
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-7",
+    name: "ETH Zurich",
+    rank: 7,
+    location: "Zurich, Switzerland",
+    country: "Switzerland",
+    match: 66,
+    acceptanceRate: "27%",
+    tuition: "CHF 1,460/yr",
+    deadline: "Dec 15",
+    image:
+      "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-8",
+    name: "National University of Singapore",
+    rank: 8,
+    location: "Singapore",
+    country: "Singapore",
+    match: 86,
+    acceptanceRate: "5-10%",
+    tuition: "SGD 17,650+/yr",
+    deadline: "Feb 26",
+    image:
+      "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-9",
+    name: "UCL",
+    rank: 9,
+    location: "London, UK",
+    country: "UK",
+    match: 72,
+    acceptanceRate: "36%",
+    tuition: "£29,800+/yr",
+    deadline: "Jan 31",
+    image:
+      "https://images.unsplash.com/photo-1488747279002-c8523379faaa?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-10",
+    name: "Caltech",
+    rank: 10,
+    location: "Pasadena, CA, USA",
+    country: "USA",
+    match: 51,
+    acceptanceRate: "3.1%",
+    tuition: "$60,816/yr",
+    deadline: "Jan 3",
+    image:
+      "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-11",
+    name: "University of Toronto",
+    rank: 21,
+    location: "Toronto, Canada",
+    country: "Canada",
+    match: 88,
+    acceptanceRate: "43%",
+    tuition: "CAD $6,100+/yr",
+    deadline: "Jan 15",
+    image:
+      "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-12",
+    name: "University of British Columbia",
+    rank: 38,
+    location: "Vancouver, Canada",
+    country: "Canada",
+    match: 83,
+    acceptanceRate: "52%",
+    tuition: "CAD $5,700+/yr",
+    deadline: "Jan 15",
+    image:
+      "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-13",
+    name: "University of Melbourne",
+    rank: 19,
+    location: "Melbourne, Australia",
+    country: "Australia",
+    match: 77,
+    acceptanceRate: "70%",
+    tuition: "AUD $45,000+/yr",
+    deadline: "Dec 1",
+    image:
+      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-14",
+    name: "University of Hong Kong",
+    rank: 17,
+    location: "Hong Kong",
+    country: "Hong Kong",
+    match: 91,
+    acceptanceRate: "41%",
+    tuition: "HKD $182,000/yr",
+    deadline: "Aug 22",
+    image:
+      "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "uni-15",
+    name: "HKUST",
+    rank: 47,
+    location: "Hong Kong",
+    country: "Hong Kong",
+    match: 89,
+    acceptanceRate: "35%",
+    tuition: "HKD $185,000/yr",
+    deadline: "Jun 10",
+    image:
+      "https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?auto=format&fit=crop&w=1200&q=80",
   },
 ];
 
@@ -336,7 +298,6 @@ export const communityPosts = [
     attachment: null,
     color: "bg-emerald-100 text-emerald-700",
     upvoted: false,
-    saved: false,
   },
   {
     id: "post-2",
@@ -351,7 +312,6 @@ export const communityPosts = [
     attachment: "SAT_Resources.pdf",
     color: "bg-sky-100 text-sky-700",
     upvoted: false,
-    saved: false,
   },
   {
     id: "post-3",
@@ -366,7 +326,6 @@ export const communityPosts = [
     attachment: null,
     color: "bg-violet-100 text-violet-700",
     upvoted: false,
-    saved: false,
   },
 ];
 
@@ -449,13 +408,10 @@ export const defaultProfile = {
   currentGrade: "Grade 12",
   country: "Hong Kong",
   city: "Hong Kong",
-  customCity: "",
   schoolName: "",
-  curriculum: "High School Diploma",
   gpa: "",
   targetMajor: "Computer Science",
   targetCountries: ["USA", "UK"],
-  otherTargetCountry: "",
   dreamSchool: "MIT",
   satScore: "",
   actScore: "",

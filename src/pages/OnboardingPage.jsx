@@ -8,15 +8,13 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
-  cityOptionsByCountry,
   countryOptions,
   defaultProfile,
   dreamSchools,
-  gradeOptions,
   majorOptions,
-  targetCountryOptions,
 } from "../data/mockData";
 import {
+  getCurrentUser,
   getOnboardingComplete,
   getProfile,
   saveProfile,
@@ -37,25 +35,22 @@ export default function OnboardingPage() {
       return;
     }
 
-    const saved = getProfile();
+    const currentUser = getCurrentUser();
+    const storedProfile = getProfile();
+
     setForm({
       ...defaultProfile,
-      ...saved,
-      targetCountries: Array.isArray(saved.targetCountries)
-        ? saved.targetCountries
-        : defaultProfile.targetCountries,
+      ...storedProfile,
+      fullName: storedProfile.fullName || currentUser?.fullName || "",
+      email: storedProfile.email || currentUser?.email || "",
+      targetCountries:
+        storedProfile.targetCountries?.length > 0
+          ? storedProfile.targetCountries
+          : defaultProfile.targetCountries,
     });
   }, [navigate]);
 
   const progress = useMemo(() => (step / totalSteps) * 100, [step]);
-
-  const availableCities = useMemo(() => {
-    return cityOptionsByCountry[form.country] || ["Other"];
-  }, [form.country]);
-
-  const selectedTargetCountries = useMemo(() => {
-    return Array.isArray(form.targetCountries) ? form.targetCountries : [];
-  }, [form.targetCountries]);
 
   function updateField(name, value) {
     const next = { ...form, [name]: value };
@@ -63,41 +58,14 @@ export default function OnboardingPage() {
     saveProfile(next);
   }
 
-  function updateMany(patch) {
-    const next = { ...form, ...patch };
-    setForm(next);
-    saveProfile(next);
-  }
-
-  function handleCountryChange(country) {
-    const nextCities = cityOptionsByCountry[country] || ["Other"];
-    const keepCurrentCity = nextCities.includes(form.city);
-
-    updateMany({
-      country,
-      city: keepCurrentCity ? form.city : nextCities[0],
-      customCity: keepCurrentCity ? form.customCity : "",
-    });
-  }
-
-  function handleCityChange(city) {
-    updateMany({
-      city,
-      customCity: city === "Other" ? form.customCity || "" : "",
-    });
-  }
-
-  function toggleTargetCountry(country) {
-    const has = selectedTargetCountries.includes(country);
+  function toggleCountry(country) {
+    const current = form.targetCountries || [];
+    const has = current.includes(country);
     const next = has
-      ? selectedTargetCountries.filter((item) => item !== country)
-      : [...selectedTargetCountries, country];
+      ? current.filter((c) => c !== country)
+      : [...current, country];
 
-    updateMany({
-      targetCountries: next,
-      otherTargetCountry:
-        country === "Other" && has ? "" : form.otherTargetCountry,
-    });
+    updateField("targetCountries", next);
   }
 
   function validateCurrentStep() {
@@ -105,29 +73,19 @@ export default function OnboardingPage() {
       return (
         form.fullName.trim() &&
         form.email.trim() &&
-        form.currentGrade.trim() &&
         form.country.trim() &&
-        form.city.trim() &&
-        (form.city !== "Other" || form.customCity.trim())
+        form.city.trim()
       );
     }
 
     if (step === 2) {
       return (
-        form.schoolName.trim() &&
-        form.gpa.trim() &&
-        form.targetMajor.trim() &&
-        form.curriculum.trim()
+        form.schoolName.trim() && form.gpa.trim() && form.targetMajor.trim()
       );
     }
 
     if (step === 3) {
-      return (
-        selectedTargetCountries.length > 0 &&
-        form.dreamSchool.trim() &&
-        (!selectedTargetCountries.includes("Other") ||
-          form.otherTargetCountry.trim())
-      );
+      return (form.targetCountries || []).length > 0 && form.dreamSchool.trim();
     }
 
     return true;
@@ -135,39 +93,21 @@ export default function OnboardingPage() {
 
   function nextStep() {
     if (!validateCurrentStep()) return;
-    if (step < totalSteps) setStep((current) => current + 1);
+    if (step < totalSteps) setStep((s) => s + 1);
   }
 
   function prevStep() {
-    if (step > 1) setStep((current) => current - 1);
+    if (step > 1) setStep((s) => s - 1);
   }
 
   function completeSetup() {
-    if (!validateCurrentStep()) return;
-
-    const normalizedCity =
-      form.city === "Other" ? form.customCity.trim() : form.city;
-
-    const normalizedTargetCountries = selectedTargetCountries.includes("Other")
-      ? [
-          ...selectedTargetCountries.filter((item) => item !== "Other"),
-          form.otherTargetCountry.trim(),
-        ].filter(Boolean)
-      : selectedTargetCountries;
-
-    const finalProfile = {
-      ...form,
-      city: normalizedCity,
-      targetCountries: normalizedTargetCountries,
-    };
-
-    saveProfile(finalProfile);
+    saveProfile(form);
     setOnboardingComplete(true);
     setDone(true);
   }
 
   function launchApp() {
-    navigate("/home");
+    navigate("/home", { replace: true });
   }
 
   if (done) {
@@ -178,35 +118,34 @@ export default function OnboardingPage() {
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-50 text-brand-600">
               <CheckCircle2 size={40} />
             </div>
-
             <h1 className="text-2xl font-bold text-ink">
               You&apos;re All Set!
             </h1>
             <p className="mt-2 text-sm text-body">
-              Your Gnosis workspace is ready. Your dashboard, matches, and essay
-              coaching will now use the preferences you just saved.
+              Your Gnosis workspace is ready. Start exploring your university
+              application journey.
             </p>
 
             <div className="mt-6 space-y-3 text-left">
               <Feature
                 icon={<Sparkles size={18} />}
                 title="AI Matching"
-                desc="Personalized school recommendations based on your academic goals."
+                desc="Personalized university recommendations."
               />
               <Feature
                 icon={<MessageSquareText size={18} />}
                 title="Essay Coach"
-                desc="Draft, revise, and improve your personal statement with AI."
+                desc="Real-time feedback and brainstorming help."
               />
               <Feature
                 icon={<TimerReset size={18} />}
                 title="Timeline Manager"
-                desc="Track deadlines, tasks, and next actions in one place."
+                desc="Track tasks and deadlines clearly."
               />
               <Feature
                 icon={<GraduationCap size={18} />}
                 title="Community"
-                desc="Explore admissions tips, milestone posts, and student resources."
+                desc="See milestones, resources, and tips."
               />
             </div>
 
@@ -246,8 +185,8 @@ export default function OnboardingPage() {
               Build your application path
             </h1>
             <p className="mt-2 text-sm text-body">
-              We&apos;ll personalize your dashboard, school matches, timeline,
-              and essay coaching experience.
+              We&apos;ll personalize your dashboard, school matches, and essay
+              coaching experience.
             </p>
           </div>
 
@@ -258,7 +197,7 @@ export default function OnboardingPage() {
                   className="input"
                   value={form.fullName}
                   onChange={(e) => updateField("fullName", e.target.value)}
-                  placeholder="Andrew Ng"
+                  placeholder="your name"
                 />
               </Field>
 
@@ -278,7 +217,13 @@ export default function OnboardingPage() {
                   value={form.currentGrade}
                   onChange={(e) => updateField("currentGrade", e.target.value)}
                 >
-                  {gradeOptions.map((grade) => (
+                  {[
+                    "Grade 9",
+                    "Grade 10",
+                    "Grade 11",
+                    "Grade 12",
+                    "Gap Year",
+                  ].map((grade) => (
                     <option key={grade} value={grade}>
                       {grade}
                     </option>
@@ -290,7 +235,7 @@ export default function OnboardingPage() {
                 <select
                   className="input"
                   value={form.country}
-                  onChange={(e) => handleCountryChange(e.target.value)}
+                  onChange={(e) => updateField("country", e.target.value)}
                 >
                   {countryOptions.map((country) => (
                     <option key={country} value={country}>
@@ -301,32 +246,13 @@ export default function OnboardingPage() {
               </Field>
 
               <Field label="City">
-                <select
+                <input
                   className="input"
-                  value={
-                    availableCities.includes(form.city) ? form.city : "Other"
-                  }
-                  onChange={(e) => handleCityChange(e.target.value)}
-                >
-                  {availableCities.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
+                  value={form.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  placeholder="Hong Kong"
+                />
               </Field>
-
-              {(form.city === "Other" ||
-                !availableCities.includes(form.city)) && (
-                <Field label="Custom City">
-                  <input
-                    className="input"
-                    value={form.customCity}
-                    onChange={(e) => updateField("customCity", e.target.value)}
-                    placeholder="Enter your city"
-                  />
-                </Field>
-              )}
             </div>
           )}
 
@@ -341,34 +267,12 @@ export default function OnboardingPage() {
                 />
               </Field>
 
-              <Field label="Curriculum">
-                <select
-                  className="input"
-                  value={form.curriculum}
-                  onChange={(e) => updateField("curriculum", e.target.value)}
-                >
-                  {[
-                    "High School Diploma",
-                    "IB",
-                    "A-Level",
-                    "AP",
-                    "DSE",
-                    "CBSE",
-                    "Other",
-                  ].map((curriculum) => (
-                    <option key={curriculum} value={curriculum}>
-                      {curriculum}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="GPA / Predicted Grade">
+              <Field label="GPA">
                 <input
                   className="input"
                   value={form.gpa}
                   onChange={(e) => updateField("gpa", e.target.value)}
-                  placeholder="3.8 / 4.0 or 42/45"
+                  placeholder="3.8 / 4.0"
                 />
               </Field>
 
@@ -392,14 +296,15 @@ export default function OnboardingPage() {
             <div className="space-y-4">
               <Field label="Target Countries">
                 <div className="flex flex-wrap gap-2">
-                  {targetCountryOptions.map((country) => {
-                    const active = selectedTargetCountries.includes(country);
-
+                  {countryOptions.map((country) => {
+                    const active = (form.targetCountries || []).includes(
+                      country,
+                    );
                     return (
                       <button
                         key={country}
                         type="button"
-                        onClick={() => toggleTargetCountry(country)}
+                        onClick={() => toggleCountry(country)}
                         className={active ? "pill pill-active" : "pill"}
                       >
                         {country}
@@ -409,26 +314,13 @@ export default function OnboardingPage() {
                 </div>
               </Field>
 
-              {selectedTargetCountries.includes("Other") && (
-                <Field label="Other Target Country">
-                  <input
-                    className="input"
-                    value={form.otherTargetCountry}
-                    onChange={(e) =>
-                      updateField("otherTargetCountry", e.target.value)
-                    }
-                    placeholder="Enter country name"
-                  />
-                </Field>
-              )}
-
               <Field label="Dream School">
                 <input
                   list="dream-schools"
                   className="input"
                   value={form.dreamSchool}
                   onChange={(e) => updateField("dreamSchool", e.target.value)}
-                  placeholder="Search or enter a university"
+                  placeholder="MIT"
                 />
                 <datalist id="dream-schools">
                   {dreamSchools.map((school) => (
@@ -436,15 +328,6 @@ export default function OnboardingPage() {
                   ))}
                 </datalist>
               </Field>
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-ink">Current focus</p>
-                <p className="mt-1 text-sm text-body">
-                  {form.targetMajor || "Undeclared"} ·{" "}
-                  {selectedTargetCountries.join(", ") ||
-                    "No countries selected"}
-                </p>
-              </div>
             </div>
           )}
 
@@ -485,32 +368,33 @@ export default function OnboardingPage() {
                   placeholder="Optional"
                 />
               </Field>
-
-              <div className="rounded-2xl border border-brand-100 bg-brand-50 p-4">
-                <p className="text-sm font-semibold text-brand-700">
-                  You can update these scores later.
-                </p>
-                <p className="mt-1 text-sm text-brand-600">
-                  Gnosis will still generate school matches even if your test
-                  scores are empty.
-                </p>
-              </div>
             </div>
           )}
 
           <div className="mt-8 flex gap-3">
             {step > 1 && (
-              <button className="secondary-btn flex-1" onClick={prevStep}>
+              <button
+                type="button"
+                className="secondary-btn flex-1"
+                onClick={prevStep}
+              >
                 Back
               </button>
             )}
-
             {step < totalSteps ? (
-              <button className="primary-btn flex-1" onClick={nextStep}>
+              <button
+                type="button"
+                className="primary-btn flex-1"
+                onClick={nextStep}
+              >
                 Continue
               </button>
             ) : (
-              <button className="primary-btn flex-1" onClick={completeSetup}>
+              <button
+                type="button"
+                className="primary-btn flex-1"
+                onClick={completeSetup}
+              >
                 Complete Setup
               </button>
             )}
