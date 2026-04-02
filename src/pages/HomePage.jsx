@@ -227,6 +227,16 @@ export default function HomePage() {
             desc="Track uploads and readiness."
             onClick={() => navigate("/documents")}
           />
+          <ActionCard
+            title="Mentor Support"
+            desc="Book sessions with vetted mentors"
+            onClick={() => navigate("/more")}
+          />
+          <ActionCard
+            title="Personalized Practice for SAT"
+            desc="SAT MC Practice"
+            onClick={() => navigate("/more")}
+          />
         </div>
       </div>
 

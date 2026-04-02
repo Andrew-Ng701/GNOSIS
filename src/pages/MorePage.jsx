@@ -1,5 +1,6 @@
 import {
   Bot,
+  Brain,
   CalendarClock,
   ClipboardList,
   FileText,
@@ -8,7 +9,6 @@ import {
   RefreshCcw,
   User,
   Users,
-  Brain,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -33,13 +33,32 @@ export default function MorePage() {
   const navigate = useNavigate();
   const profile = getProfile();
   const savedSchools = getSavedSchools();
+  const [mentorBooking, setMentorBooking] = useState(null);
+
+  const mentors = [
+    {
+      id: "mentor-1",
+      name: "Dr. Emma Carter",
+      expertise: ["SAT Reading", "SAT Writing", "College Applications"],
+    },
+    {
+      id: "mentor-2",
+      name: "Jason Lee",
+      expertise: ["SAT Math", "Test Strategy", "Time Management"],
+    },
+    {
+      id: "mentor-3",
+      name: "Sophia Wong",
+      expertise: ["SAT Verbal", "Essay Planning", "Interview Preparation"],
+    },
+  ];
 
   const [applications, setApplications] = useState(getApplications());
   const [docs, setDocs] = useState(getDocuments());
   const [showCvModal, setShowCvModal] = useState(false);
   const [showMentorModal, setShowMentorModal] = useState(false);
   const [mentorTime, setMentorTime] = useState("");
-  const [mentorBooking, setMentorBooking] = useState(null);
+  const [selectedMentorId, setSelectedMentorId] = useState(mentors[0].id);
 
   const [cvData, setCvData] = useState(() => {
     const saved = getCvData();
@@ -57,6 +76,12 @@ export default function MorePage() {
       skills: saved.skills || "",
     };
   });
+
+  const selectedMentor = useMemo(() => {
+    return (
+      mentors.find((mentor) => mentor.id === selectedMentorId) || mentors[0]
+    );
+  }, [selectedMentorId]);
 
   const profileItems = useMemo(
     () => [
@@ -112,19 +137,6 @@ export default function MorePage() {
     }).format(date);
   }
 
-  function formatDateTime(value) {
-    if (!value) return "Not set";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat("en", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(date);
-  }
-
   function getBadgeClass(score) {
     const category = getMatchCategory(score || 0);
     if (category === "Safe") return "bg-emerald-100 text-emerald-700";
@@ -141,7 +153,7 @@ export default function MorePage() {
     saveCvData(cvData);
 
     const next = docs.map((doc) =>
-      doc.name === "CV / Resume" || doc.name === "CV Resume"
+      doc.name === "CV Resume"
         ? {
             ...doc,
             status: "Complete",
@@ -175,45 +187,52 @@ export default function MorePage() {
   }
 
   function handleMentorBooking() {
+    if (!selectedMentorId) {
+      alert("Please choose a mentor first.");
+      return;
+    }
+
     if (!mentorTime) {
       alert("Please choose a session time first.");
       return;
     }
 
     const booking = {
-      id: `mentor-${Date.now()}`,
-      requestedAt: new Date().toISOString(),
-      preferredTime: mentorTime,
-      status: "Finding mentor",
-      note: "We are finding a vetted mentor for you now. Please wait quietly for our reply.",
+      mentorId: selectedMentor.id,
+      mentorName: selectedMentor.name,
+      expertise: selectedMentor.expertise,
+      time: mentorTime,
+      status: "Confirmed",
+      bookedAt: new Date().toISOString(),
     };
 
     setMentorBooking(booking);
-    alert(
-      `Your mentor session request for ${formatDateTime(
-        mentorTime,
-      )} has been submitted. We are finding a vetted mentor for you now. Please wait quietly for our reply.`,
-    );
     setShowMentorModal(false);
     setMentorTime("");
+
+    alert(
+      `Your session with ${selectedMentor.name} has been booked successfully. Quick confirmation has been sent.`,
+    );
   }
 
-  function cancelMentorBooking() {
-    const confirmed = window.confirm("Cancel this mentor booking request?");
+  function handleCancelMentorBooking() {
+    if (!mentorBooking) return;
+
+    const confirmed = window.confirm(
+      `Cancel your booking with ${mentorBooking.mentorName}?`,
+    );
     if (!confirmed) return;
+
     setMentorBooking(null);
   }
 
-  function openIeltsPractice() {
-    navigate("/ielts-practice");
+  function openSatPractice() {
+    navigate("/sat-practice");
   }
 
   return (
     <>
-      <PageHeader
-        title="More"
-        subtitle="Profile, saved items, and app actions"
-      />
+      <PageHeader title="More" />
 
       <div className="mb-6 grid grid-cols-2 gap-3">
         <QuickCard
@@ -241,47 +260,154 @@ export default function MorePage() {
           onClick={() => navigate("/documents")}
         />
       </div>
-
-      <SectionTitle title="Profile Snapshot" />
-      <div className="card p-4">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-            <User size={20} />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-ink">
-              {profile.fullName || "Student"}
-            </p>
-            <p className="truncate text-xs text-body">
-              {profile.email || "No email set"}
-            </p>
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-medium text-slate-600">
-              Profile completeness
-            </span>
-            <span className="font-bold text-ink">{profileCompletion}%</span>
-          </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="app-gradient h-full rounded-full transition-all duration-300"
-              style={{ width: `${profileCompletion}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {profileItems.map(([label, value]) => (
-            <div key={label} className="rounded-2xl bg-slate-50 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-label">
-                {label}
-              </p>
-              <p className="mt-1 text-sm font-medium text-ink">{value}</p>
+      <SectionTitle title="Mentor & Practice" />
+      <div className="space-y-3">
+        <div className="card p-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-2xl bg-brand-50 p-3 text-brand-600">
+              <Users size={18} />
             </div>
-          ))}
+
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-ink">
+                Mentor Matching
+              </h3>
+              <p className="mt-1 text-sm text-body">
+                Book sessions with vetted mentors, choose a specific mentor, and
+                schedule in advance with quick confirmation.
+              </p>
+
+              <button
+                className="primary-btn mt-4 w-full"
+                onClick={() => setShowMentorModal(true)}
+              >
+                Book Mentor Session
+              </button>
+
+              {mentorBooking ? (
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-ink">
+                    Booking Details
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-1 gap-3">
+                    <div className="rounded-2xl bg-white p-3">
+                      <p className="text-[11px] uppercase tracking-wide text-label">
+                        Mentor
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-ink">
+                        {mentorBooking.mentorName}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-3">
+                      <p className="text-[11px] uppercase tracking-wide text-label">
+                        Expertise
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-ink">
+                        {mentorBooking.expertise.join(", ")}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-3">
+                      <p className="text-[11px] uppercase tracking-wide text-label">
+                        Session Time
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-ink">
+                        {mentorBooking.time}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-3">
+                      <p className="text-[11px] uppercase tracking-wide text-label">
+                        Status
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-emerald-700">
+                        {mentorBooking.status}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    className="secondary-btn mt-4 w-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                    onClick={handleCancelMentorBooking}
+                  >
+                    Cancel Booking
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-2xl bg-violet-50 p-3 text-violet-600">
+              <Brain size={18} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-ink">
+                Personalized Practice for SAT
+              </h3>
+              <p className="mt-1 text-sm text-body">
+                Practice 10 SAT multiple-choice questions with immediate answer
+                feedback after each question.
+              </p>
+
+              <button
+                className="primary-btn mt-4 w-full"
+                onClick={openSatPractice}
+              >
+                Start SAT Practice
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <SectionTitle title="Profile Snapshot" />
+        <div className="card p-4">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+              <User size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-ink">
+                {profile.fullName || "Student"}
+              </p>
+              <p className="truncate text-xs text-body">
+                {profile.email || "No email set"}
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <span className="font-medium text-slate-600">
+                Profile completeness
+              </span>
+              <span className="font-bold text-ink">{profileCompletion}%</span>
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="app-gradient h-full rounded-full transition-all duration-300"
+                style={{ width: `${profileCompletion}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {profileItems.map(([label, value]) => (
+              <div key={label} className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-label">
+                  {label}
+                </p>
+                <p className="mt-1 text-sm font-medium text-ink">{value}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -442,7 +568,6 @@ export default function MorePage() {
             <PencilLine size={16} />
             Make CV
           </button>
-
           <p className="mt-3 text-sm text-body">
             Open the full CV form, edit your details, and save it to mark CV
             Resume as complete.
@@ -453,118 +578,6 @@ export default function MorePage() {
             <pre className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-700">
               {cvPreview || "Your CV preview will appear here."}
             </pre>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <SectionTitle title="Mentor Support" />
-        <div className="space-y-3">
-          <div className="card p-4">
-            <div className="flex items-start gap-3">
-              <div className="rounded-2xl bg-brand-50 p-3 text-brand-600">
-                <Users size={18} />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold text-ink">
-                  Mentor Matching
-                </h3>
-                <p className="mt-1 text-sm text-body">
-                  Book sessions with vetted mentors and request a preferred time
-                  slot.
-                </p>
-
-                <button
-                  className="primary-btn mt-4 w-full"
-                  onClick={() => setShowMentorModal(true)}
-                >
-                  Book Mentor Session
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {mentorBooking ? (
-            <div className="card p-4">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl bg-amber-50 p-3 text-amber-600">
-                  <CalendarClock size={18} />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-sm font-semibold text-ink">
-                        Booking Request Submitted
-                      </h3>
-                      <p className="mt-1 text-sm text-body">
-                        {mentorBooking.note}
-                      </p>
-                    </div>
-
-                    <Badge className="bg-amber-100 text-amber-700">
-                      {mentorBooking.status}
-                    </Badge>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-[11px] uppercase tracking-wide text-label">
-                        Preferred time
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-ink">
-                        {formatDateTime(mentorBooking.preferredTime)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-[11px] uppercase tracking-wide text-label">
-                        Requested at
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-ink">
-                        {formatDateTime(mentorBooking.requestedAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    className="secondary-btn mt-4 w-full border-rose-200 text-rose-700"
-                    onClick={cancelMentorBooking}
-                  >
-                    Cancel Booking
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <SectionTitle title="Personalized Practice for IELTS" />
-        <div className="card p-4">
-          <div className="flex items-start gap-3">
-            <div className="rounded-2xl bg-violet-50 p-3 text-violet-600">
-              <Brain size={18} />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-semibold text-ink">
-                AI-generated IELTS MC Practice
-              </h3>
-              <p className="mt-1 text-sm text-body">
-                Generate 20 multiple-choice questions focused on IELTS format,
-                exam understanding, and score-improving concepts.
-              </p>
-
-              <button
-                className="primary-btn mt-4 w-full"
-                onClick={openIeltsPractice}
-              >
-                Start Personalized Practice
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -764,10 +777,33 @@ export default function MorePage() {
             <div className="space-y-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-ink">
-                  Book sessions with vetted mentors
+                  Select a mentor and book in advance
                 </p>
                 <p className="mt-1 text-sm text-body">
-                  Choose your preferred time and submit your session request.
+                  Choose a specific mentor, review their expertise, and schedule
+                  your appointment with quick confirmation.
+                </p>
+              </div>
+
+              <label className="block">
+                <span className="label">Choose mentor</span>
+                <select
+                  className="input"
+                  value={selectedMentorId}
+                  onChange={(e) => setSelectedMentorId(e.target.value)}
+                >
+                  {mentors.map((mentor) => (
+                    <option key={mentor.id} value={mentor.id}>
+                      {mentor.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="rounded-2xl border border-brand-100 bg-brand-50 p-4">
+                <p className="text-sm font-semibold text-ink">Main expertise</p>
+                <p className="mt-2 text-sm text-body">
+                  {selectedMentor.expertise.join(", ")}
                 </p>
               </div>
 
@@ -792,7 +828,7 @@ export default function MorePage() {
                   className="primary-btn flex-1"
                   onClick={handleMentorBooking}
                 >
-                  Submit Request
+                  Confirm Booking
                 </button>
               </div>
             </div>
@@ -803,9 +839,12 @@ export default function MorePage() {
   );
 }
 
-function QuickCard({ icon, title, desc, onClick }) {
+function QuickCard({ icon, title, desc, onClick, fullWidth = false }) {
   return (
-    <button onClick={onClick} className="card p-4 text-left">
+    <button
+      onClick={onClick}
+      className={`card p-4 text-left ${fullWidth ? "w-full" : ""}`}
+    >
       <div className="mb-2 text-brand-500">{icon}</div>
       <p className="text-sm font-semibold text-ink">{title}</p>
       <p className="mt-1 text-xs text-body">{desc}</p>

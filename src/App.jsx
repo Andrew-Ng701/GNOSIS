@@ -8,7 +8,7 @@ import CommunityPage from "./pages/CommunityPage";
 import MorePage from "./pages/MorePage";
 import TimelinePage from "./pages/TimelinePage";
 import DocumentsPage from "./pages/DocumentsPage";
-import IELTSPracticePage from "./pages/IELTSPracticePage";
+import SATPracticePage from "./pages/SATPracticePage";
 import { getOnboardingComplete } from "./lib/storage";
 
 function ProtectedRoute({ children }) {
@@ -94,11 +94,11 @@ export default function App() {
       />
 
       <Route
-        path="/ielts-practice"
+        path="/sat-practice"
         element={
           <ProtectedRoute>
             <AppShell showNav={false}>
-              <IELTSPracticePage />
+              <SATPracticePage />
             </AppShell>
           </ProtectedRoute>
         }

@@ -1,7 +1,7 @@
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_API_KEY =
-  "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";
-const OPENROUTER_MODEL = "stepfun/step-3.5-flash:free";
+  "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";
+const OPENROUTER_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 const SITE_URL =
   import.meta.env.VITE_SITE_URL ||
   window.location.origin ||
@@ -79,7 +79,7 @@ function cleanJsonText(text) {
 }
 
 function getMessageContent(data) {
-  return data?.choices?.[0]?.message?.content?.trim() || "";
+  return data?.choices?.[0].message?.content?.trim() || "";
 }
 
 function normalizeQuestion(question, index) {
@@ -175,7 +175,7 @@ export async function streamEssayCoachReply(messages, profile, onDelta) {
 
       try {
         const json = JSON.parse(payload);
-        const chunkText = json?.choices?.[0]?.delta?.content || "";
+        const chunkText = json?.choices?.[0].delta?.content || "";
 
         if (chunkText) {
           fullText += chunkText;
